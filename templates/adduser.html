@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SubtleHue</title>
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="static/css/spectrum.css" rel="stylesheet">
+    <link href="static/css/nouislider.min.css" rel="stylesheet">
+    <link href="static/css/subtle.css" rel="stylesheet">
+  </head>
+  <body>
+  <div class="wrapper">
+      <div class="container">
+          <h3>SubtleHue</h3>
+          <p>We could connect to the Hue bridge. This could be due to a change in IP address, or perhaps because this is the first time this application runs. Please push the button on the Hue bridge and we will attempt to reconnect.</p>
+          <div id = "alert_placeholder"></div>
+      </div>
+  </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="static/js//jquery-3.1.1.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script type="application/javascript">
+        function bootstrap_alert(message, alertclass) {
+            alertclass = alertclass || "danger"
+            $('#alert_placeholder').html('<div class="alert alert-' + alertclass + ' alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><span>' + message + '</span></div>')
+        }
+
+
+        function check_create_user() {
+            $.getJSON("/createuser",function(data) {
+                if(data.error) {
+                    bootstrap_alert(data.error, "danger")
+                    setTimeout(check_create_user, 4000)
+                } else {
+                    window.location.href = "/";
+                }
+            }).fail(function() {
+                    setTimeout(check_create_user, 4000)
+                }
+            )
+        }
+
+      $( document ).ready(function() {
+        check_create_user()
+    });
+
+  </script>
+  </body>
+</html>

@@ -1,0 +1,4 @@
+requests
+flask
+qhue
+git+git://github.com/b0tting/hue-python-rgb-converter.git
