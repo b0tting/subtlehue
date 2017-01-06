@@ -1,11 +1,12 @@
 // Flip over a Bootstrap button
 function toggleButton(buttonname, disable) {
+    var thisButton = $("#" + buttonname);
     if (disable) {
-        $("#" + buttonname).toggleClass("btn-success", false)
-        $("#" + buttonname).prop('disabled', true);
+        thisButton.toggleClass("btn-success", false);
+        thisButton.prop('disabled', true);
     } else {
-        $("#" + buttonname).toggleClass("btn-success", true)
-        $("#" + buttonname).prop('disabled', false);
+        thisButton.toggleClass("btn-success", true);
+        thisButton.prop('disabled', false);
     }
 }
 
@@ -33,27 +34,26 @@ function forceblink(bulbnumber) {
 // from the list of available bulbs
 function add_bulb_block(light_number, light_name, initial_color) {
     // We do not want to see this bulb in the light list any more
-    $("#bulbs_available option[value='"+ light_number +"']").remove();
+    $("#bulbs_available").find("option[value='"+ light_number +"']").remove();
 
     // Add a large panel with some sub panels and buttons
-    block = '<div class="panel panel-default" name="bulbscene" data-bulb="'+light_number+'">' +
+    var block = '<div class="panel panel-default" data-name="bulbscene" data-bulb="'+light_number+'">' +
         '<div class="panel-heading">' +
         '<h3 class="panel-title">'+light_name+ ' scene ' +
-        '<span name="sceneremove" data-bulb="'+light_number+'" class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span></h3>'+
-        '</div><div class="panel-body" name="scenelist" data-bulb="'+light_number+'"> ' +
+        '<span data-name="sceneremove" data-bulb="'+light_number+'" class="glyphicon glyphicon-remove-circle" aria-hidden="true"></spandata-></h3>'+
+        '</div><div class="panel-body" data-name="scenelist" data-bulb="'+light_number+'"> ' +
         '<button name="color_add" class="btn btn-success btn-sm" data-bulb="'+light_number+'" data-color="'+ initial_color+'">Add</button>' +
-        '</div></div>'
-    $("#bulbs_active").append(block)
+        '</div></div>';
+    $("#bulbs_active").append(block);
 
     // Bind an event to the little remove button next to the panel name
-    $("span[name='sceneremove']").click(function() {
-        light_number=$(this).data("bulb")
-        I_edited_something()
-        $("div[name='bulbscene'][data-bulb='"+light_number+"']").remove()
-
+    $("span[data-name='sceneremove']").click(function() {
+        light_number=$(this).data("bulb");
+        $( document ).trigger( "subtle:change");
+        $("div[data-name='bulbscene'][data-bulb='"+light_number+"']").remove();
         // Refresh to get our bulb list completed again
         refresh_buttons()
-    })
+    });
 
     $("button[name='color_add'][data-bulb='"+light_number+"']").click(function(){
         add_color_picker($(this).data('bulb'), $(this).data('color'))
@@ -62,14 +62,14 @@ function add_bulb_block(light_number, light_name, initial_color) {
 
 // Given a bulb number, add another color picker to that bulb block
 function add_color_picker(bulbnumber, defaultcolor) {
-    sceneblock = $("div[name='scenelist'][data-bulb='"+bulbnumber+"']")
-    current_palette = $("input[data-bulb='"+bulbnumber+"']")
+    sceneblock = $("div[data-name='scenelist'][data-bulb='"+bulbnumber+"']");
+    current_palette = $("input[data-bulb='"+bulbnumber+"']");
     if(current_palette.length < 12) {
         newcolor = $('<input/>', {
             'type': 'color',
             'name': 'colorpicker',
             'data-bulb':bulbnumber,
-            'value': defaultcolor,
+            'value': defaultcolor
         }).prependTo(sceneblock);
         newcolor.spectrum({
             showPalette: true,
@@ -77,19 +77,15 @@ function add_color_picker(bulbnumber, defaultcolor) {
             palette: [],
             cancelText: "Remove",
             localStorageKey: "spectrum.homepage",
-            maxSelectionSize: 12,
+            maxSelectionSize: 12
         })
         .on("dragstop.spectrum", function (e, color) {
-            forcecolor(bulbnumber,color.toHexString())
-            I_edited_something()
+            forcecolor(bulbnumber,color.toHexString());
+            $( document ).trigger( "subtle:change")
         })
         .on("change.spectrum", function (e, color) {
-            forcecolor(bulbnumber,color.toHexString())
-            I_edited_something()
-        })
-        .on("cancel.spectrum", function (e, color) {
-            alert(this.parentNode.childNodes.length)
-
+            forcecolor(bulbnumber,color.toHexString());
+            $( document ).trigger( "subtle:change")
         })
     }
 }
@@ -97,41 +93,41 @@ function add_color_picker(bulbnumber, defaultcolor) {
 // Adds a new row to the bulb scheme list and inserts one empty colorpicker
 $("#bulbs_add").click(function() {
     // Figure out the ID and name of the selected bulb
-    var light_number = $('#bulbs_available').val()
+    var light_number = $('#bulbs_available').val();
     if(light_number) {
-        selected = $("#bulbs_available :selected")
-        initial_color = selected.attr("color")
+        selected = $("#bulbs_available:selected");
+        initial_color = selected.attr("color");
         light_name = selected.text();
 
         // Have the server blink said light
-        forceblink(light_number)
+        forceblink(light_number);
 
-        add_bulb_block(light_number, light_name, initial_color)
-        add_color_picker(light_number, initial_color)
-        I_edited_something()
+        add_bulb_block(light_number, light_name, initial_color);
+        add_color_picker(light_number, initial_color);
+        $( document ).trigger( "subtle:change")
     }
-})
+});
 
 $("#bulbs_force").click(function() {
-    bootstrap_alert("Forced a color change on saved lights", "success")
-    toggleButton("bulbs_force", true)
+    bootstrap_alert("Forced a color change on saved lights", "success");
+    toggleButton("bulbs_force", true);
     $.get("/forcerun").done(function() {
        toggleButton("bulbs_force", false)
   }).fail(function() {
-        toggleButton("bulbs_force", false)
+        toggleButton("bulbs_force", false);
         bootstrap_alert("Tried to do a light change, but failed for unknown reasons", "danger")
   })
-})
+});
 
 $("#savechanges").click(function() {
-    var scheme  = {}
+    var scheme  = {};
     $("input[data-bulb][name='colorpicker']").each(function (){
-        bulbnumber = $(this).data('bulb')
+        bulbnumber = $(this).data('bulb');
          if(!scheme [bulbnumber]) {
             scheme [bulbnumber] = []
          }
         scheme [bulbnumber].push($(this).spectrum('get').toHexString())
-    })
+    });
 
     state = {
         "run_from": document.getElementById('timeslider').noUiSlider.get()[0],
@@ -140,41 +136,40 @@ $("#savechanges").click(function() {
         "switch_until":document.getElementById('cycleslider').noUiSlider.get()[1],
         "duration": document.getElementById('durationslider').noUiSlider.get(),
         "lights": scheme
-    }
+    };
     $.ajax("/addschedules", {
         data: JSON.stringify(state),
         contentType: 'application/json',
-        type: 'POST',
+        type: 'POST'
     }).fail(function(jqXHR, textStatus, errorThrown) {
         bootstrap_alert("Could not save light configuration to server. Is the server instance up and running? Error message: " + errorThrown)
     }).done(function() {
-        bootstrap_alert("Changes saved succesfully", "success")
+        bootstrap_alert("Changes saved succesfully", "success");
         toggleButton("savechanges", true)
     })
-})
-
-// Now did you?
-function I_edited_something() {
-    toggleButton("savechanges")
-}
+});
 
 function bootstrap_alert(message, alertclass) {
-    alertclass = alertclass || "danger"
-     $('#alert_placeholder').html('<div class="alert alert-' + alertclass + ' alert-dismissible" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button><span>'+message+'</span></div>')
+    alertclass = alertclass || "danger";
+     $('#alert_placeholder').html('<div class="alert alert-' + alertclass + ' alert-dismissible" role="alert">' +
+         '<button type="button" class="close" data-dismiss="alert" aria-label="Close">' +
+         '<span aria-hidden="true">&times;</span>' +
+         '</button><span>'+message+'</span>' +
+         '</div>')
 }
 
 // Fetch the HUE configuration so we know what bulbs are there, what their
 // current colors are and if we already schemed them
 function refresh_buttons() {
-    toggleButton("bulbs_add", true)
+    toggleButton("bulbs_add", true);
     $.getJSON("getlights", function (data) {
         if(!data.error) {
             // Fetch the first row of JSON keys
-            lights_available = Object.keys(data.lights)
-            bulbs = $('#bulbs_available').empty()
+            lights_available = Object.keys(data.lights);
+            bulbs = $('#bulbs_available').empty();
             if (lights_available.length > 0) {
                 for (number in lights_available) {
-                    lightid = lights_available[number]
+                    lightid = lights_available[number];
                     if ($("div[data-bulb='" + lightid + "']").length == 0) {
                         bulbs.append($('<option>').val(lightid).text(data.lights[lightid].name).attr("color", "#" + data.lights[lightid].hexcolor))
                     }
@@ -197,14 +192,14 @@ function init_sliders() {
             'min': 0,
             'max': 1440
         }
-    })
-	timeslider.noUiSlider.on('update', function( values, handle ) {
+    });
+	timeslider.noUiSlider.on('update', function( values ) {
 	    if(values[0] == 0 && values[1] == 96) {
             $("#timeslidertimes").text("Schedules run permanently")
         } else {
 	        $("#timeslidertimes").text("Subtle changer runs from " + minutes_as_time(values[0])  + " until " +  minutes_as_time(values[1]) )
         }
-        I_edited_something()
+        $( document ).trigger( "subtle:change");
     });
 
     var cycleslider = document.getElementById('cycleslider');
@@ -215,8 +210,8 @@ function init_sliders() {
             'min': 1,
             'max': 30
         }
-    })
-	cycleslider.noUiSlider.on('update', function( values, handle ) {
+    });
+	cycleslider.noUiSlider.on('update', function( values ) {
         if(values[0] == values[1]) {
 	        $("#cycleslidertimes").text("Selected lights will change every " + Math.floor(values[0]) + " minutes.")
         } else {
@@ -234,21 +229,21 @@ function init_sliders() {
             'min': 0,
             'max': 60
         }
-    })
-	durationslider.noUiSlider.on('update', function( values, handle ) {
-        $("#durationslidertimes").text("Color changes take "+ Math.floor(values) + " seconds")
-        I_edited_something()
+    });
+	durationslider.noUiSlider.on('update', function( values ) {
+        $("#durationslidertimes").text("Color changes take "+ Math.floor(values) + " seconds");
+        
     });
 }
 
 function restore_settings() {
-        $.getJSON("/getschedules",function(data) {
-        document.getElementById("durationslider").noUiSlider.set(data.schedules.duration)
-        document.getElementById("cycleslider").noUiSlider.set([data.schedules.randomstart, data.schedules.randomend])
-        document.getElementById("timeslider").noUiSlider.set([data.schedules.startat, data.schedules.endat])
+    $.getJSON("/getschedules",function(data) {
+        document.getElementById("durationslider").noUiSlider.set(data.schedules.duration);
+        document.getElementById("cycleslider").noUiSlider.set([data.schedules.randomstart, data.schedules.randomend]);
+        document.getElementById("timeslider").noUiSlider.set([data.schedules.startat, data.schedules.endat]);
         for(light in data.schedules.lights) {
-            light_name = data.schedules.lightnames[light]
-            add_bulb_block(light,light_name, data.schedules.lights[light][0])
+            light_name = data.schedules.lightnames[light];
+            add_bulb_block(light,light_name, data.schedules.lights[light][0]);
             for(color in data.schedules.lights[light]) {
                 add_color_picker(light, data.schedules.lights[light][color])
             }
@@ -258,11 +253,16 @@ function restore_settings() {
 }
 
  $(document).ready(function ($) {
-    refresh_buttons()
-    init_sliders()
+    refresh_buttons();
+    init_sliders();
 
      // I do not understand why this button disables. Sorry.
-     toggleButton("bulbs_force", false)
+     toggleButton("bulbs_force", false);
 
-    restore_settings()
-})
+     $( document ).on( "subtle::change", function(){
+          toggleButton("savechanges")
+    });
+
+
+    restore_settings();
+});
