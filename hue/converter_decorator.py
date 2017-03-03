@@ -34,6 +34,15 @@ class HUE():
         self.user = username
         self.ip = IP
 
+    @staticmethod
+    def get_is_color_model(modelid):
+        iscolor = False
+        try:
+            get_light_gamut(modelid)
+            iscolor = True
+        except ValueError as e:
+            pass
+        return iscolor
 
 
     @staticmethod
@@ -136,11 +145,9 @@ class HUE():
         ## Kan niet met een dict comprehension, daar gaat mijn kans iets nieuws te leren
         newlights ={}
         for light, config in self.bridge.lights().iteritems():
-            try:
-                get_light_gamut(config['modelid'])
+            if(HUE.get_is_color_model(config['modelid'])):
                 newlights[light] = config
                 newlights[light]["hexcolor"] = self.get_hex_color_for_xy(config)
-            except ValueError as e:
-                pass
         self.lights = newlights
+
 

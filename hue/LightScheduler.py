@@ -40,6 +40,7 @@ class LightScheduler():
         self.scheduledlights = {}
         self.settingsfile = settingsfile
         self.schedules = {}
+        self.pause = False
 
         try:
             self.load_scheduler_config()
@@ -58,6 +59,9 @@ class LightScheduler():
         self.timer.setDaemon(True)
         self.timer.start()
 
+    def set_paused(self, state):
+        logger.warn("Pausing state" if state else "Unpausing state")
+        self.pause = state
 
     def add_rawjson_schedules(self, raw_json):
         unmapped_content = json.loads(raw_json)
@@ -100,7 +104,7 @@ class LightScheduler():
 
     def run_scheduler(self, force=False):
         if force:
-            logger.warn("Doing a forced run through the light scheduler")
+            logger.warn("Doing a forced run through the light scheduler, even skipping a pause")
         currentmins = int(time.time() / 60)
         ## Check if we are not outside of the subtle window
         today = datetime.date.today()
@@ -108,7 +112,7 @@ class LightScheduler():
         logger.debug(
             "Schedule checking for applicable lights in " + str(len(self.scheduledlights)) + " lights at time " + str(minutes_of_day))
         if(self.hue):
-            if (self.schedules["startat"] < minutes_of_day < self.schedules["endat"]) or force:
+            if (not self.pause and self.schedules["startat"] < minutes_of_day < self.schedules["endat"]) or force:
                 for light in self.scheduledlights.values():
                     logger.debug("..light " + str(light.light_number) + " is due at " + str(light.lastcycle + light.nextcycletime))
                     if (light.lastcycle + int(light.nextcycletime)) <= currentmins or force:

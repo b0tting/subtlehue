@@ -90,6 +90,16 @@ function add_color_picker(bulbnumber, defaultcolor) {
     }
 }
 
+$("#pause_button").click(function () {
+  $.get("/pause/" + (pause ? 0 : 1))
+  pause = !pause
+  if(pause) {
+      $("#pause_button").text("Unpause SubtleHue")
+  } else {
+      $("#pause_button").text("Pause SubtleHue")
+  }
+})
+
 // Adds a new row to the bulb scheme list and inserts one empty colorpicker
 $("#bulbs_add").click(function() {
     // Figure out the ID and name of the selected bulb
@@ -217,7 +227,7 @@ function init_sliders() {
         } else {
             $("#cycleslidertimes").text("Selected lights will change every " + Math.floor(values[0]) + " to " + Math.floor(values[1]) + " minutes.")
         }
-        I_edited_something()
+        $( document ).trigger( "subtle:change");
     });
 
     var durationslider = document.getElementById('durationslider');
@@ -252,17 +262,3 @@ function restore_settings() {
     })
 }
 
- $(document).ready(function ($) {
-    refresh_buttons();
-    init_sliders();
-
-     // I do not understand why this button disables. Sorry.
-     toggleButton("bulbs_force", false);
-
-     $( document ).on( "subtle::change", function(){
-          toggleButton("savechanges")
-    });
-
-
-    restore_settings();
-});

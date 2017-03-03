@@ -70,6 +70,13 @@ def flask_force_run():
     return jsonify({"state": "ok"})
 
 
+## Shortcut to pause the scheduler
+@app.route('/pause/<pause_scheduler>')
+def flask_pause_scheduler(pause_scheduler):
+    to_pause = pause_scheduler == "1"
+    scheduler.set_paused(to_pause)
+    return jsonify({"state": "ok"})
+
 ## Method for blinking, this is run whenever a new scheme is added
 @app.route('/forceblink/<light_number>')
 def flask_force_blink(light_number):
@@ -117,7 +124,7 @@ def hello_world():
     if scheduler == None:
         return render_template('adduser.html')
     else:
-        return render_template('index.html')
+        return render_template('index.html', pause="true" if scheduler.pause else "false")
 
 
 def init_subtle():

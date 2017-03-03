@@ -12,38 +12,61 @@
   </head>
   <body>
   <div class="wrapper">
-      <div class="container">
-          <h3>SubtleHue</h3>
-          <p>Set a color scheme for your HUE lights and randomly cycle through these over time</p>
-          <div id = "alert_placeholder"></div>
-          <div class="row">
-              <div class="col-md-6">
-                <select id="bulbs_available"></select>
-                <button id="bulbs_add" class="btn btn-default">Add to schedule</button>
-                <p class="help-block">All color HUE lights available</p>
-                <button id="bulbs_force" class="btn btn-success">Run now</button>
-                <p class="help-block">Force all previously saved scenes to do a color change</p>
-              </div>
-              <div class="col-md-6">
-                    <div id="timeslider"></div>
-                      <p class="help-block"><span id="timeslidertimes"></span></p>
-                    <div id="cycleslider"></div>
-                  <p class="help-block"><span id="cycleslidertimes"></span></p>
-                    <div id="durationslider"></div>
-                  <p class="help-block"><span id="durationslidertimes"></span></p>
-
-              </div>
+    <div class="container">
+      <h3>SubtleHue</h3>
+      <p>Set a color scheme for your HUE lights and randomly cycle through these over time</p>
+      <div id = "alert_placeholder"></div>
+      <div class="row">
+          <div class="col-md-6">
+            <select id="bulbs_available"></select>
+            <button id="bulbs_add" class="btn btn-default">Add to schedule</button>
+            <p class="help-block">All color HUE lights available</p>
+            <button id="bulbs_force" class="btn btn-success">Run now</button>
+            <p class="help-block">Force all previously saved scenes to do a color change</p>
           </div>
-
-            <p><button id="savechanges" class="btn" disabled>Save changes</button></p>
-            <div id="bulbs_active"></div>
+          <div class="col-md-6">
+                <div id="timeslider"></div>
+                <p class="help-block">
+                  <span id="timeslidertimes"></span>
+                </p>
+                <div id="cycleslider"></div>
+                <p class="help-block"><span id="cycleslidertimes"></span></p>
+                <div id="durationslider"></div>
+                <p class="help-block"><span id="durationslidertimes"></span></p>
+          </div>
         </div>
-      </div>
+        <p><button id="savechanges" class="btn" disabled>Save changes</button> <button id="pause_button" class="btn"></button></p>
+        <div id="bulbs_active"></div>
+    </div>
+  </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="static/js//jquery-3.1.1.min.js"></script>
     <script src="static/js/bootstrap.min.js"></script>
     <script src="static/js/spectrum.js"></script>
     <script src="static/js/nouislider.min.js"></script>
-    <script src="static/js/subtle.js"></script>
+  <script src="static/js/subtle.js"></script>
+  <script>
+      var pause = {{ pause }}
+       $(document).ready(function ($) {
+    refresh_buttons();
+    init_sliders();
+
+     // I do not understand why this button disables. Sorry.
+     toggleButton("bulbs_force", false);
+
+     $( document ).on( "subtle:change", function(){
+          toggleButton("savechanges")
+    });
+
+   if(pause) {
+          $("#pause_button").text("Unpause SubtleHue")
+      } else {
+          $("#pause_button").text("Pause SubtleHue")
+      }
+
+    restore_settings();
+});
+  </script>
+
   </body>
 </html>
