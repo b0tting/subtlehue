@@ -1,4 +1,5 @@
-requests
 flask
+requests
 qhue
 git+git://github.com/b0tting/hue-python-rgb-converter.git
+
