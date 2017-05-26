@@ -1,4 +1,5 @@
 import logging
+import os
 import traceback
 from flask import Flask, jsonify
 from flask import render_template
@@ -16,8 +17,11 @@ logger.addHandler(handler)
 ## Disable werkzeug logging
 logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
-SCHEDULE_FILE = "./subtlehue.json"
-SETTINGS_FILE = "./subtlehuesettings.json"
+
+## Get working dir for WSGI situations:
+here = os.path.dirname(__file__)
+SCHEDULE_FILE = os.path.join(here, './subtlehue.json')
+SETTINGS_FILE = os.path.join(here, './subtlehuesettings.json')
 
 ## Accepts a JSON set of bulbs, their suggested colors and some additional parameters
 @app.route('/addschedules', methods=["POST"])
